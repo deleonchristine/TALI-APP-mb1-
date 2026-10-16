@@ -1,108 +1,400 @@
-<article class="post-layout" [attr.id]="'post-' + post.id">
-  <a class="post-avatar-link" [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]" [attr.aria-label]="'View ' + post.authorName + ' profile'">
-    <div class="post-avatar">
-      @if (authorImage; as profileImage) {
-        <img [src]="profileImage" alt="" />
-      } @else {
-        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+<article
+  class="post-layout"
+  [class.has-comment-preview]="previewComments.length > 0"
+  [attr.id]="'post-' + post.id"
+>
+  <div class="post-topline">
+    <div class="post-avatar-area">
+      <a
+        class="post-avatar-link"
+        [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]"
+        [attr.aria-label]="'View ' + post.authorName + ' profile'"
+      >
+        <div class="post-avatar">
+          @if (authorImage; as image) {
+            <img [src]="image" alt="" />
+          } @else {
+            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+          }
+        </div>
+      </a>
+
+      @if (canFollowAuthor && !isFollowingAuthor) {
+        <button
+          class="avatar-plus"
+          type="button"
+          aria-label="Open profile actions"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="showAuthorOptions"
+          (click)="toggleAuthorOptions($event)"
+        >
+          <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
+        </button>
+      }
+
+      @if (showAuthorOptions) {
+        <div
+          class="author-options-menu"
+          role="menu"
+          aria-label="Profile actions"
+          (click)="$event.stopPropagation()"
+          (keydown.escape)="closeMenus()"
+        >
+          <a
+            role="menuitem"
+            [routerLink]="['/profile', post.authorId]"
+            (click)="closeMenus()"
+          >
+            <span>Visit profile</span>
+            <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+          </a>
+
+          @if (canFollowAuthor) {
+            <button type="button" role="menuitem" (click)="toggleFollowAuthor()">
+              <span>{{ isFollowingAuthor ? 'Unfollow' : 'Follow' }}</span>
+              <ion-icon
+                [name]="isFollowingAuthor
+                  ? 'remove-circle-outline' : 'add-circle-outline'"
+                aria-hidden="true"
+              ></ion-icon>
+            </button>
+          }
+        </div>
       }
     </div>
-  </a>
-  <div class="post-card">
-    <div class="post-topline">
-      <a class="post-profile-link" [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]">
+
+    <a
+      class="post-profile-link"
+      [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]"
+    >
       <div class="post-user-details">
         <div class="identity-row">
           <strong>{{ post.authorName }}</strong>
-          <span class="post-time" [attr.title]="post.createdAt | date:'medium'">{{ timeAgo }}</span>
+          <span class="post-time" [attr.title]="post.createdAt | date:'medium'">
+            {{ timeAgo }}
+          </span>
         </div>
         <span class="post-handle">{{ post.authorUsername }}</span>
       </div>
     </a>
-    <button class="post-more" type="button" aria-label="More post options" [attr.aria-expanded]="showMoreOptions" (click)="showMoreOptions = !showMoreOptions">
+
+    <button
+      class="post-more"
+      type="button"
+      aria-label="More post options"
+      aria-haspopup="menu"
+      [attr.aria-expanded]="showMoreOptions"
+      (click)="toggleMoreOptions($event)"
+    >
       <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
     </button>
+
     @if (showMoreOptions) {
-      <div class="post-options-menu" role="menu" aria-label="Post options" (click)="$event.stopPropagation()">
+      <div
+        class="post-options-menu"
+        role="menu"
+        aria-label="Post options"
+        (click)="$event.stopPropagation()"
+        (keydown.escape)="closeMenus()"
+      >
+        @if (post.authorId !== null) {
+          <a
+            role="menuitem"
+            [routerLink]="['/profile', post.authorId]"
+            (click)="closeMenus()"
+          >Visit profile</a>
+        }
+
+        @if (canFollowAuthor) {
+          <button type="button" role="menuitem" (click)="toggleFollowAuthor()">
+            {{ isFollowingAuthor ? 'Unfollow' : 'Follow' }}
+          </button>
+        }
+
         @if (isPostOwner && post.trashedAt) {
-          <button type="button" role="menuitem" (click)="restorePost()">Restore post</button>
-          <button type="button" role="menuitem" class="destructive-option" (click)="deletePostPermanently()">Delete permanently</button>
+          <button type="button" role="menuitem" (click)="restorePost()">
+            Restore post
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            class="destructive-option"
+            (click)="deletePostPermanently()"
+          >Delete permanently</button>
         } @else if (isPostOwner) {
-          <button type="button" role="menuitem" (click)="startEditingPost()">Edit post</button>
-          <button type="button" role="menuitem" (click)="togglePostNotifications()">{{ post.notificationsDisabled ? 'Turn on notifications for this post' : 'Turn off notifications for this post' }}</button>
-          <button type="button" role="menuitem" (click)="togglePostArchive()">{{ post.archivedAt ? 'Move back to profile' : 'Move to archive' }}</button>
-          <button type="button" role="menuitem" class="destructive-option" (click)="movePostToTrash()">Move to trash</button>
+          <button type="button" role="menuitem" (click)="startEditingPost()">
+            Edit post
+          </button>
+          <button type="button" role="menuitem" (click)="togglePostNotifications()">
+            {{ post.notificationsDisabled
+              ? 'Turn on notifications for this post'
+              : 'Turn off notifications for this post' }}
+          </button>
+          <button type="button" role="menuitem" (click)="togglePostArchive()">
+            {{ post.archivedAt ? 'Move back to profile' : 'Move to archive' }}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            class="destructive-option"
+            (click)="movePostToTrash()"
+          >Move to trash</button>
         }
-        <button type="button" role="menuitem" (click)="copyPostLink()">Copy link</button>
+
+        <button type="button" role="menuitem" (click)="copyPostLink()">
+          Copy link
+        </button>
       </div>
     }
   </div>
 
-  @if (editingPost) {
-    <div class="post-edit-form">
-      <textarea [value]="editBody" (input)="editBody = $any($event.target).value" maxlength="500" aria-label="Edit post text"></textarea>
-      <div><button type="button" (click)="editingPost = false">Cancel</button><button type="button" (click)="saveEditedPost()">Save changes</button></div>
-    </div>
-  } @else if (post.body) { <p class="post-body">{{ post.body }}</p> }
+  <div class="post-card">
+    @if (editingPost) {
+      <div class="post-edit-form">
+        <textarea
+          [value]="editBody"
+          (input)="editBody = $any($event.target).value"
+          maxlength="500"
+          aria-label="Edit post text"
+        ></textarea>
+        <div>
+          <button type="button" (click)="editingPost = false">Cancel</button>
+          <button type="button" (click)="saveEditedPost()">Save changes</button>
+        </div>
+      </div>
+    } @else if (post.body) {
+      <p class="post-body">{{ post.body }}</p>
+    }
 
-  @if (post.attachments.length) {
-    <div class="post-media-carousel">
-      @if (hasMultipleImages) {
-        <button class="attachment-arrow attachment-arrow-previous" type="button" aria-label="Previous picture" (click)="scrollAttachmentBy($event, -1)"><ion-icon name="chevron-back-outline"></ion-icon></button>
-        <button class="attachment-arrow attachment-arrow-next" type="button" aria-label="Next picture" (click)="scrollAttachmentBy($event, 1)"><ion-icon name="chevron-forward-outline"></ion-icon></button>
-      }
-      <div class="post-attachments" aria-label="Post attachments" (wheel)="scrollAttachments($event)">
-        @for (attachment of post.attachments; track $index) {
-          @if (attachment.type.startsWith('image/')) {
-            <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
-          } @else if (attachment.type.startsWith('video/')) {
-            <video class="post-media" controls playsinline [muted]="autoplayVideos" [autoplay]="autoplayVideos" [attr.preload]="dataSaver ? 'none' : 'metadata'" [attr.aria-label]="attachment.name">
-              <source [src]="attachment.dataUrl" [type]="attachment.type" />
-            </video>
-          } @else {
-            <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
-              <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
-              <span>{{ attachment.name }}</span>
-            </a>
+    @if (post.attachments.length) {
+      <div class="post-media-carousel">
+        @if (hasMultipleImages) {
+          <button
+            class="attachment-arrow attachment-arrow-previous"
+            type="button"
+            aria-label="Previous picture"
+            (click)="scrollAttachmentBy($event, -1)"
+          ><ion-icon name="chevron-back-outline"></ion-icon></button>
+
+          <button
+            class="attachment-arrow attachment-arrow-next"
+            type="button"
+            aria-label="Next picture"
+            (click)="scrollAttachmentBy($event, 1)"
+          ><ion-icon name="chevron-forward-outline"></ion-icon></button>
+        }
+
+        <div
+          class="post-attachments"
+          aria-label="Post attachments"
+          (wheel)="scrollAttachments($event)"
+        >
+          @for (attachment of post.attachments; track $index) {
+            @if (attachment.type.startsWith('image/')) {
+              <img
+                class="post-media"
+                [src]="attachment.dataUrl"
+                [alt]="attachment.name"
+              />
+            } @else if (attachment.type.startsWith('video/')) {
+              <video
+                class="post-media"
+                controls
+                playsinline
+                [muted]="autoplayVideos"
+                [autoplay]="autoplayVideos"
+                [attr.preload]="dataSaver ? 'none' : 'metadata'"
+                [attr.aria-label]="attachment.name"
+              >
+                <source [src]="attachment.dataUrl" [type]="attachment.type" />
+              </video>
+            } @else {
+              <a
+                class="post-file"
+                [href]="attachment.dataUrl"
+                [download]="attachment.name"
+              >
+                <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
+                <span>{{ attachment.name }}</span>
+              </a>
+            }
           }
+        </div>
+      </div>
+    }
+
+    @if (post.trashedAt) {
+      <p class="post-trash-note">
+        In trash · permanently deleted in {{ trashDaysRemaining }} days unless restored
+      </p>
+    }
+
+    @if (!post.trashedAt) {
+      <div class="post-actions" aria-label="Post actions">
+        <button
+          class="action-button"
+          [class.is-active]="isLiked"
+          type="button"
+          [attr.aria-pressed]="isLiked"
+          [attr.aria-label]="isLiked ? 'Unlike post' : 'Like post'"
+          (click)="toggleLike()"
+        >
+          <ion-icon [name]="isLiked ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
+          @if (!hideLikeCounts) { <span>{{ post.likes.length }}</span> }
+        </button>
+
+        @if (commentsEnabled) {
+          <button
+            class="action-button"
+            type="button"
+            [attr.aria-label]="'View ' + post.comments.length + ' comments'"
+            (click)="openComments()"
+          >
+            <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
+            <span>{{ post.comments.length }}</span>
+          </button>
+        }
+
+        @if (sharingEnabled || isReposted) {
+          <button
+            class="action-button"
+            [class.is-active]="isReposted"
+            type="button"
+            [attr.aria-pressed]="isReposted"
+            [attr.aria-label]="isReposted ? 'Undo repost' : 'Repost'"
+            (click)="toggleRepost()"
+          >
+            <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+            @if (!hideShareCounts) { <span>{{ post.reposts.length }}</span> }
+          </button>
+        }
+
+        @if (sharingEnabled) {
+          <button
+            class="action-button"
+            type="button"
+            aria-label="Share post"
+            (click)="sharePost()"
+          ><ion-icon name="share-outline" aria-hidden="true"></ion-icon></button>
         }
       </div>
-    </div>
-  }
+    }
 
-  @if (post.trashedAt) { <p class="post-trash-note">In trash · permanently deleted in {{ trashDaysRemaining }} days unless restored</p> }
-  @if (!post.trashedAt) { <div class="post-actions" aria-label="Post actions">
-    <button class="action-button" [class.is-active]="isLiked" type="button" [attr.aria-pressed]="isLiked" [attr.aria-label]="isLiked ? 'Unlike post' : 'Like post'" (click)="toggleLike()">
-      <ion-icon [name]="isLiked ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
-      @if (!hideLikeCounts) { <span>{{ post.likes.length }}</span> }
-    </button>
-    @if (commentsEnabled) {
-    <button class="action-button" type="button" [attr.aria-label]="'View ' + post.comments.length + ' comments'" (click)="openComments()">
-      <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
-      <span>{{ post.comments.length }}</span>
-    </button>
+    @if (actionMessage) {
+      <p class="action-message" role="status">{{ actionMessage }}</p>
     }
-    @if (sharingEnabled || isReposted) {
-    <button class="action-button" [class.is-active]="isReposted" type="button" [attr.aria-pressed]="isReposted" [attr.aria-label]="isReposted ? 'Undo repost' : 'Repost'" (click)="toggleRepost()">
-      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-      @if (!hideShareCounts) { <span>{{ post.reposts.length }}</span> }
-    </button>
-    }
-    @if (sharingEnabled) {
-    <button class="action-button" type="button" aria-label="Share post" (click)="sharePost()">
-      <ion-icon name="share-outline" aria-hidden="true"></ion-icon>
-    </button>
-    }
-  </div> }
-
-  @if (actionMessage) { <p class="action-message" role="status">{{ actionMessage }}</p> }
   </div>
+
+  @if (previewComments.length > 0) {
+    <section class="feed-comment-preview" aria-label="Latest comment">
+      @for (comment of previewComments; track comment.id) {
+        <div class="feed-comment-row">
+          <a
+            class="feed-comment-avatar"
+            [routerLink]="['/profile', comment.authorId]"
+            [attr.aria-label]="'View ' + comment.authorName + ' profile'"
+          >
+            @if (commentProfileImage(comment); as image) {
+              <img [src]="image" alt="" />
+            } @else {
+              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            }
+          </a>
+
+          <div class="feed-comment-copy">
+            <div class="feed-comment-identity">
+              <a [routerLink]="['/profile', comment.authorId]">
+                {{ comment.authorName }}
+              </a>
+              <span [attr.title]="comment.createdAt | date:'medium'">
+                {{ commentTimeAgo(comment) }}
+              </span>
+              @if (comment.authorId === post.authorId) {
+                <span>Author</span>
+              }
+            </div>
+
+            <p class="feed-comment-text">{{ comment.body }}</p>
+
+            <div class="preview-actions" aria-label="Comment actions">
+              <button
+                class="preview-action"
+                type="button"
+                [class.is-liked]="isPreviewLiked(comment)"
+                [attr.aria-pressed]="isPreviewLiked(comment)"
+                [attr.aria-label]="isPreviewLiked(comment)
+                  ? 'Unlike comment' : 'Like comment'"
+                (click)="togglePreviewLike(comment)"
+              >
+                <ion-icon
+                  [name]="isPreviewLiked(comment) ? 'heart' : 'heart-outline'"
+                  aria-hidden="true"
+                ></ion-icon>
+                @if (!hideLikeCounts) {
+                  <span>{{ comment.likes?.length ?? 0 }}</span>
+                }
+              </button>
+
+              @if (commentsEnabled) {
+                <button
+                  class="preview-action"
+                  type="button"
+                  aria-label="Reply to comment"
+                  (click)="replyToPreview(comment)"
+                >
+                  <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
+                  <span>{{ previewReplyCount(comment) }}</span>
+                </button>
+              }
+
+              @if (sharingEnabled) {
+                <button
+                  class="preview-action"
+                  type="button"
+                  [class.is-reposted]="isPreviewReposted(comment)"
+                  [attr.aria-pressed]="isPreviewReposted(comment)"
+                  [attr.aria-label]="isPreviewReposted(comment)
+                    ? 'Undo comment repost' : 'Repost comment'"
+                  (click)="togglePreviewRepost(comment)"
+                >
+                  <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+                  @if (!hideShareCounts) {
+                    <span>{{ comment.reposts?.length ?? 0 }}</span>
+                  }
+                </button>
+
+                <button
+                  class="preview-action"
+                  type="button"
+                  aria-label="Share comment"
+                  (click)="sharePreview(comment)"
+                >
+                  <ion-icon name="share-outline" aria-hidden="true"></ion-icon>
+                  @if (!hideShareCounts) {
+                    <span>{{ comment.shares?.length ?? 0 }}</span>
+                  }
+                </button>
+              }
+            </div>
+
+            <button
+              class="feed-comment-view"
+              type="button"
+              (click)="openComments()"
+            >View all replies</button>
+          </div>
+        </div>
+      }
+    </section>
+  }
 </article>
 
 @if (commentsOpen) {
   <ion-modal
     [isOpen]="true"
-    [cssClass]="hasVisualAttachments ? 'post-comments-modal' : 'post-comments-modal text-only-comments-modal'"
+    [cssClass]="hasVisualAttachments
+      ? 'post-comments-modal'
+      : 'post-comments-modal text-only-comments-modal'"
     [backdropDismiss]="true"
     (didDismiss)="closeComments()"
   >

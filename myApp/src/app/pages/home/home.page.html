@@ -2,46 +2,107 @@
   <ion-toolbar>
     <div class="home-toolbar-row">
       <span aria-hidden="true"></span>
-      <div class="home-brand-mark"><img class="logo-on-dark" src="assets/Logo%20%E2%80%93%20dark@1x.png" alt="Tali" /><img class="logo-on-light" src="assets/Logo%20%E2%80%93%20light@1x.png" alt="" aria-hidden="true" /></div>
-      <ion-button fill="clear" class="search-button" aria-label="Search" routerLink="/search">
+
+      <div class="home-brand-mark">
+        <img
+          class="logo-on-dark"
+          src="assets/Logo%20%E2%80%93%20dark@1x.png"
+          alt="Tali"
+        />
+        <img
+          class="logo-on-light"
+          src="assets/Logo%20%E2%80%93%20light@1x.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </div>
+
+      <ion-button
+        fill="clear"
+        class="search-button"
+        aria-label="Search"
+        routerLink="/search"
+      >
         <ion-icon slot="icon-only" name="search-outline"></ion-icon>
       </ion-button>
     </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="home-content" [scrollEvents]="true" (ionScroll)="saveScroll($event)">
+<ion-content
+  class="home-content"
+  [scrollEvents]="true"
+  (ionScroll)="saveScroll($event)"
+>
   <div class="screen-shell">
+    <div class="feed-tabs" role="tablist" aria-label="Feed">
+      <button
+        type="button"
+        role="tab"
+        class="feed-tab"
+        [class.is-active]="activeFeed === 'for-you'"
+        [attr.aria-selected]="activeFeed === 'for-you'"
+        (click)="setFeed('for-you')"
+      >
+        For You
+      </button>
+
+      <button
+        type="button"
+        role="tab"
+        class="feed-tab"
+        [class.is-active]="activeFeed === 'following'"
+        [attr.aria-selected]="activeFeed === 'following'"
+        (click)="setFeed('following')"
+      >
+        Following
+      </button>
+    </div>
+
     @if (accountService.selectedAccount(); as account) {
-      <section class="home-account-row" aria-label="Current account">
+      <section
+        class="home-account-row composer-row"
+        aria-label="Create a post"
+      >
         <ion-avatar class="profile-avatar">
           @if (profileImageFor(account.id); as profileImage) {
             <img [src]="profileImage" alt="" />
           } @else {
-            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            <ion-icon
+              name="person-circle-outline"
+              aria-hidden="true"
+            ></ion-icon>
           }
         </ion-avatar>
-        <div class="home-account-copy">
-          <strong>{{ account.name }}</strong>
-          <span>{{ account.username }}</span>
-        </div>
+
+        <a class="composer-prompt" routerLink="/add-post">
+          What’s new?
+        </a>
+
+        <a
+          class="composer-post-button"
+          routerLink="/add-post"
+          aria-label="Create a post"
+        >
+          Post
+        </a>
       </section>
     }
 
-    <div class="feed-tabs" role="tablist" aria-label="Feed">
-      <button type="button" role="tab" class="feed-tab" [class.is-active]="activeFeed === 'for-you'" [attr.aria-selected]="activeFeed === 'for-you'" (click)="setFeed('for-you')">For you</button>
-      <button type="button" role="tab" class="feed-tab" [class.is-active]="activeFeed === 'following'" [attr.aria-selected]="activeFeed === 'following'" (click)="setFeed('following')">Following</button>
-    </div>
-
     @if (visiblePosts.length === 0) {
       <section class="feed-empty">
-        <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
+        <ion-icon
+          name="chatbubble-outline"
+          aria-hidden="true"
+        ></ion-icon>
+
         @if (activeFeed === 'following') {
           <h3>Nothing from people you follow</h3>
           <p>Follow accounts to see their posts here.</p>
         } @else {
           <h3>No posts yet</h3>
           <p>Posts from you and other accounts will appear here.</p>
+
           <ion-button fill="clear" routerLink="/add-post">
             <ion-icon slot="start" name="add-circle"></ion-icon>
             Create a post
@@ -51,7 +112,15 @@
     }
 
     @for (post of visiblePosts; track post.id) {
-      <app-post-card [post]="post" [focusPostOnLoad]="post.id === focusedPostId" [openCommentsOnLoad]="post.id === focusedPostId && openCommentsForFocusedPost" [focusRequestId]="notificationFocusKey"></app-post-card>
+      <app-post-card
+  [post]="post"
+  [showCommentPreview]="true"
+  [focusPostOnLoad]="post.id === focusedPostId"
+  [openCommentsOnLoad]="
+    post.id === focusedPostId && openCommentsForFocusedPost
+  "
+  [focusRequestId]="notificationFocusKey"
+></app-post-card>
     }
   </div>
 </ion-content>
@@ -59,11 +128,77 @@
 <ion-footer class="home-footer ion-no-border">
   <ion-toolbar>
     <nav class="page-nav home-nav" aria-label="Main navigation">
-      <ion-button fill="solid" class="active-tab" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><img class="navigation-icon house-navigation-icon" slot="icon-only" src="assets/house.png" alt="" aria-hidden="true"></ion-button>
-      <ion-button fill="clear" routerLink="/messages" (click)="viewState.handleTabTap('/messages', 'tali-view-messages')" aria-label="Messages"><img class="navigation-icon send-navigation-icon" slot="icon-only" src="assets/send-horizontal.png" alt="" aria-hidden="true"></ion-button>
-      <ion-button fill="clear" class="compose-button" routerLink="/add-post" (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-      <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" (click)="viewState.handleTabTap('/activity', 'tali-view-activity')" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
-      <ion-button fill="clear" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+      <ion-button
+        fill="solid"
+        class="active-tab"
+        routerLink="/home"
+        (click)="viewState.handleTabTap('/home', 'tali-view-home')"
+        aria-label="Home"
+      >
+        <img
+          class="navigation-icon house-navigation-icon"
+          slot="icon-only"
+          src="assets/house.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        routerLink="/messages"
+        (click)="viewState.handleTabTap('/messages', 'tali-view-messages')"
+        aria-label="Messages"
+      >
+        <img
+          class="navigation-icon send-navigation-icon"
+          slot="icon-only"
+          src="assets/send-horizontal.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        class="compose-button"
+        routerLink="/add-post"
+        (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')"
+        aria-label="Create post"
+      >
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        class="notification-nav-button"
+        routerLink="/activity"
+        (click)="viewState.handleTabTap('/activity', 'tali-view-activity')"
+        aria-label="Activity"
+      >
+        <ion-icon
+          slot="icon-only"
+          name="notifications-outline"
+        ></ion-icon>
+
+        @if (unreadNotifications) {
+          <span class="notification-badge">
+            {{ unreadNotifications }}
+          </span>
+        }
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        routerLink="/profile"
+        (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')"
+        aria-label="Profile"
+      >
+        <ion-icon
+          slot="icon-only"
+          name="person-circle-outline"
+        ></ion-icon>
+      </ion-button>
     </nav>
   </ion-toolbar>
 </ion-footer>
