@@ -1,51 +1,751 @@
-.page-header ion-toolbar { min-height: 56px; padding: 0 18px; }
-.page-header h1 { margin: 0; font-size: 1.2rem; font-weight: 650; }
-.page-footer ion-toolbar { min-height: 62px; padding: 6px 10px 8px; }
-.page-footer ion-button { width: 42px; height: 42px; margin: 0; --color: var(--page-muted); font-size: 1.3rem; }
-.page-footer .active-tab, .page-footer .compose-button { --color: var(--ion-color-primary); }
-.page-footer .compose-button { font-size: 1.8rem; }
-.composer-stage { display: grid; min-height: 100%; place-items: center; padding: 28px 16px; background: var(--page-bg); }
-.composer-card { width: min(100%, 350px); padding: 24px 28px 20px; border: 1px solid var(--page-border); border-radius: 32px; background: var(--page-surface); color: var(--page-text); box-shadow: 0 18px 42px rgba(0, 0, 0, .14); }
-.composer-header, .composer-identity, .composer-tools, .tool-actions { display: flex; align-items: center; }
-.composer-header { justify-content: space-between; gap: 12px; }
-.composer-identity { min-width: 0; gap: 11px; }
-.author-avatar { display: grid; width: 40px; height: 40px; flex: 0 0 40px; overflow: hidden; place-items: center; border-radius: 50%; background: var(--page-bg); color: var(--ion-color-primary); }
-.author-avatar img, .author-avatar ion-icon { width: 100%; height: 100%; object-fit: cover; }
-.author-copy { display: grid; min-width: 0; gap: 3px; }
-.author-copy strong, .author-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.author-copy strong { color: var(--page-text); font-size: .9rem; font-weight: 700; }
-.author-copy span { color: var(--page-muted); font-size: .75rem; }
-.close-button, .tool-button, .remove-attachment { display: grid; flex: 0 0 auto; place-items: center; border: 0; background: transparent; color: var(--page-muted); cursor: pointer; text-decoration: none; }
-.close-button { width: 32px; height: 32px; color: var(--page-text); }
-.close-button ion-icon { font-size: 1.25rem; }
-.composer-card > ion-textarea { min-height: 56px; margin-top: 12px; border-bottom: 1px solid var(--page-border); color: var(--page-text); --background: transparent; --color: var(--page-text); --placeholder-color: var(--page-muted); --padding-start: 0; --padding-end: 0; --padding-top: 14px; --padding-bottom: 14px; font-size: 1rem; line-height: 1.45; }
-.media-input { display: none; }
-.attachment-list { display: grid; gap: 8px; margin-top: 12px; }
-.attachment-preview { position: relative; display: flex; min-height: 44px; align-items: center; gap: 10px; overflow: hidden; border: 1px solid var(--page-border); border-radius: 8px; background: var(--page-bg); color: var(--page-text); }
-.attachment-preview img, .attachment-preview video { display: block; width: 100%; max-height: 220px; object-fit: contain; }
-.attachment-preview > ion-icon { margin-left: 12px; font-size: 1.25rem; }
-.attachment-preview > span { overflow: hidden; padding: 10px 44px 10px 0; text-overflow: ellipsis; white-space: nowrap; }
-.remove-attachment { position: absolute; top: 3px; right: 3px; width: 30px; height: 30px; color: var(--page-text); }
-.remove-attachment ion-icon { font-size: 1.15rem; }
-.media-error { margin: 10px 0 0; color: var(--ion-color-danger); font-size: .76rem; line-height: 1.45; }
-.media-error a { color: var(--ion-color-primary); }
-.account-notice { margin-top: 6px; margin-bottom: -6px; color: var(--page-muted); font-size: .8rem; }
-.composer-tools { min-height: 34px; gap: 10px; margin-top: 10px; }
-.tool-actions { gap: 8px; }
-.tool-button { width: 24px; height: 30px; padding: 0; font-size: 1rem; }
-.tool-button:disabled { opacity: .55; cursor: not-allowed; }
-.close-button:focus-visible, .tool-button:focus-visible, .remove-attachment:focus-visible, .publish-button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: 2px; }
-.character-count { margin-left: auto; color: var(--page-muted); font-size: .7rem; font-variant-numeric: tabular-nums; }
-.publish-button { min-height: 34px; margin-left: auto; padding: 0 17px; border: 0; border-radius: 999px; background: var(--page-text); color: var(--page-bg); font: inherit; font-size: .9rem; font-weight: 700; cursor: pointer; }
-.publish-button[aria-disabled="true"] { opacity: .68; }
-.publish-error { margin: 10px 0 0; color: var(--ion-color-danger); font-size: .78rem; line-height: 1.4; }
-@media (max-width: 380px) { .composer-card { padding: 22px 20px 20px; border-radius: 28px; } }
-@media (max-width: 560px) {
-	.author-copy strong { font-size: .84rem; }
-	.author-copy span { font-size: .7rem; }
-	.composer-card > ion-textarea { font-size: .9rem; }
-	.account-notice { font-size: .74rem; }
-	.publish-button { font-size: .84rem; }
+:host {
+  --composer-bg: #101827;
+  --composer-surface: #1b293b;
+  --composer-field: #162234;
+  --composer-copy: #f2f5fb;
+  --composer-muted: #a4b4cc;
+  --composer-line: #34465e;
+  --composer-accent: #8fb3ff;
+  --composer-primary: #2141b4;
+  --composer-danger: #ff8393;
+  --composer-shadow: 0 18px 50px rgb(0 0 0 / 20%);
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  color: var(--composer-copy);
+  font-family: inherit;
 }
 
-.page-footer img.navigation-icon { display: block; width: 24px; height: 24px; object-fit: contain; }
+:host-context(html.app-light) {
+  --composer-bg: #f7f9fc;
+  --composer-surface: #ffffff;
+  --composer-field: #f5f7fc;
+  --composer-copy: #182033;
+  --composer-muted: #69788f;
+  --composer-line: #dce4ef;
+  --composer-accent: #2141b4;
+  --composer-primary: #2141b4;
+  --composer-danger: #bd263f;
+  --composer-shadow: 0 16px 44px rgb(27 48 88 / 9%);
+}
+
+/* Page */
+
+.page-content {
+  flex: 1;
+  min-height: 0;
+  --background: var(--composer-bg);
+  --color: var(--composer-copy);
+}
+
+.page-header,
+.page-footer {
+  flex: 0 0 auto;
+  background: var(--composer-bg);
+  box-shadow: none;
+}
+
+.page-header ion-toolbar {
+  --background: var(--composer-bg);
+  --color: var(--composer-copy);
+  --border-width: 0;
+  --min-height: 76px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+
+  padding: 0;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: var(--composer-copy);
+  font-size: clamp(1.45rem, 4vw, 1.9rem);
+  font-weight: 750;
+  letter-spacing: -.035em;
+}
+
+/* Composer layout */
+
+.composer-stage {
+  box-sizing: border-box;
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 32px 20px;
+  background: var(--composer-bg);
+}
+
+.composer-card {
+  box-sizing: border-box;
+  position: relative;
+  width: min(100%, 540px);
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--composer-line);
+  border-radius: 28px;
+  background: var(--composer-surface);
+  color: var(--composer-copy);
+  box-shadow: var(--composer-shadow);
+}
+
+.composer-header,
+.composer-identity,
+.composer-tools,
+.tool-actions {
+  display: flex;
+  align-items: center;
+}
+
+.composer-header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.composer-identity {
+  min-width: 0;
+  gap: 12px;
+}
+
+.author-avatar {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--composer-field);
+  color: var(--composer-muted);
+}
+
+.author-avatar img,
+.author-avatar ion-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.author-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.author-copy strong,
+.author-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.author-copy strong {
+  color: var(--composer-copy);
+  font-size: .96rem;
+  font-weight: 700;
+}
+
+.author-copy span {
+  color: var(--composer-accent);
+  font-size: .8rem;
+}
+
+/* Buttons */
+
+.close-button,
+.tool-button,
+.remove-attachment {
+  box-sizing: border-box;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--composer-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.close-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.close-button ion-icon {
+  font-size: 1.65rem;
+}
+
+.close-button:hover,
+.tool-button:not(:disabled):hover {
+  background: color-mix(
+    in srgb,
+    var(--composer-accent) 10%,
+    transparent
+  );
+}
+
+/* Post text field */
+
+.composer-card > ion-textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 128px;
+  margin-top: 22px;
+  overflow: hidden;
+  border: 1px solid var(--composer-line);
+  border-radius: 18px;
+  background: var(--composer-field) !important;
+  color: var(--composer-copy) !important;
+  font-size: 1rem;
+  line-height: 1.6;
+
+  --background: transparent;
+  --color: var(--composer-copy);
+  --placeholder-color: var(--composer-muted);
+  --placeholder-opacity: 1;
+  --padding-start: 18px;
+  --padding-end: 18px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+
+  -webkit-text-fill-color: var(--composer-copy);
+  caret-color: var(--composer-accent);
+}
+
+.composer-card > ion-textarea:focus-within {
+  border-color: var(--composer-accent);
+}
+
+/*
+ * Scoped override for the existing global textarea rules.
+ * This targets only this Create Post composer.
+ */
+
+:host ::ng-deep .composer-stage .composer-card ion-textarea textarea,
+:host ::ng-deep .composer-stage .composer-card ion-textarea textarea.native-textarea {
+  box-sizing: border-box;
+  min-height: 94px;
+  border: 0 !important;
+  outline: none;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--composer-copy) !important;
+  -webkit-text-fill-color: var(--composer-copy) !important;
+  caret-color: var(--composer-accent) !important;
+  font: inherit;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .composer-stage .composer-card ion-textarea .textarea-wrapper,
+:host ::ng-deep .composer-stage .composer-card ion-textarea .native-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+:host ::ng-deep .composer-stage .composer-card ion-textarea textarea::placeholder {
+  color: var(--composer-muted) !important;
+  -webkit-text-fill-color: var(--composer-muted) !important;
+  opacity: 1;
+}
+
+.composer-card > ion-textarea::part(native) {
+  background: transparent !important;
+  color: var(--composer-copy) !important;
+  -webkit-text-fill-color: var(--composer-copy) !important;
+  caret-color: var(--composer-accent) !important;
+}
+
+/* Attachments */
+
+.media-input {
+  display: none;
+}
+
+.attachment-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.attachment-preview {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 56px;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  border: 1px solid var(--composer-line);
+  border-radius: 16px;
+  background: var(--composer-field);
+  color: var(--composer-copy);
+}
+
+.attachment-preview img,
+.attachment-preview video {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.attachment-preview > ion-icon {
+  flex: 0 0 auto;
+  margin-left: 16px;
+  color: var(--composer-accent);
+  font-size: 1.5rem;
+}
+
+.attachment-preview > span {
+  min-width: 0;
+  overflow: hidden;
+  padding: 14px 48px 14px 0;
+  font-size: .85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-attachment {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--composer-line);
+  border-radius: 50%;
+  background: var(--composer-surface);
+  color: var(--composer-copy);
+}
+
+.remove-attachment ion-icon {
+  font-size: 1.35rem;
+}
+
+/* Toolbar */
+
+.composer-tools {
+  position: relative;
+  min-height: 62px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--composer-line);
+}
+
+.tool-actions {
+  flex: 0 0 auto;
+  gap: 3px;
+}
+
+.tool-button {
+  width: 38px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.tool-button ion-icon {
+  font-size: 1.4rem;
+}
+
+.tool-button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.character-count {
+  margin-left: auto;
+  color: var(--composer-muted);
+  font-size: .7rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.publish-button {
+  min-height: 44px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--composer-primary);
+  color: #ffffff;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.publish-button[aria-disabled="true"] {
+  opacity: .55;
+}
+
+.publish-button:not([aria-disabled="true"]):hover {
+  filter: brightness(1.12);
+}
+
+.publish-button:not([aria-disabled="true"]):active {
+  transform: scale(.97);
+}
+
+/* Audience dropdown */
+
+.audience-menu {
+  box-sizing: border-box;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  z-index: 30;
+  width: min(270px, 100%);
+  max-height: 300px;
+  padding: 8px;
+  overflow-y: auto;
+  border: 1px solid var(--composer-line);
+  border-radius: 20px;
+  background: var(--composer-surface);
+  color: var(--composer-copy);
+  box-shadow: var(--composer-shadow);
+}
+
+.audience-menu button {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--composer-copy);
+  font: inherit;
+  font-size: .85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.audience-menu button:hover,
+.audience-menu button.is-selected {
+  background: color-mix(
+    in srgb,
+    var(--composer-accent) 12%,
+    transparent
+  );
+  color: var(--composer-accent);
+}
+
+.audience-menu ion-icon {
+  flex: 0 0 auto;
+  font-size: 1.2rem;
+}
+
+/* Audience account picker */
+
+.audience-picker {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--composer-line);
+  border-radius: 18px;
+  background: var(--composer-field);
+}
+
+.audience-picker h2 {
+  margin: 0 0 10px;
+  color: var(--composer-copy);
+  font-size: .86rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.audience-picker > p {
+  margin: 10px 0 0;
+  color: var(--composer-muted);
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.audience-person {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.audience-person + .audience-person {
+  border-top: 1px solid var(--composer-line);
+}
+
+.audience-person input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+  accent-color: var(--composer-primary);
+}
+
+.audience-person > span {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.audience-person strong,
+.audience-person small {
+  overflow-wrap: anywhere;
+}
+
+.audience-person strong {
+  color: var(--composer-copy);
+  font-size: .83rem;
+}
+
+.audience-person small {
+  color: var(--composer-muted);
+  font-size: .74rem;
+}
+
+/* Feedback */
+
+.media-error,
+.publish-error {
+  margin: 12px 0 0;
+  color: var(--composer-danger);
+  font-size: .8rem;
+  line-height: 1.5;
+}
+
+.media-error a {
+  color: var(--composer-accent);
+}
+
+.account-notice {
+  margin: 10px 0 0;
+  color: var(--composer-muted);
+  font-size: .8rem;
+}
+
+/* Bottom navigation */
+
+.page-footer ion-toolbar {
+  --background: var(--composer-bg);
+  --border-width: 0;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 8px;
+  --padding-bottom: 12px;
+
+  padding: 0;
+}
+
+.page-footer .page-nav.add-post-nav {
+  box-sizing: border-box;
+  display: flex;
+  width: min(100%, 540px);
+  min-height: 66px;
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 24px;
+  background: #2141b4;
+}
+
+.page-footer .add-post-nav ion-button {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  margin: 0;
+  font-size: 1.5rem;
+
+  --background: transparent;
+  --color: #ffffff;
+  --border-radius: 50%;
+  --box-shadow: none;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.page-footer .add-post-nav .compose-button {
+  width: 52px;
+  height: 52px;
+  flex-basis: 52px;
+  font-size: 2.15rem;
+
+  --background: #ffffff;
+  --background-hover: #edf2ff;
+  --background-activated: #e1e9ff;
+  --color: #2141b4;
+}
+
+.page-footer img.navigation-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+/* Keyboard focus */
+
+.close-button:focus-visible,
+.tool-button:focus-visible,
+.remove-attachment:focus-visible,
+.publish-button:focus-visible,
+.audience-menu button:focus-visible,
+.audience-person input:focus-visible {
+  outline: 2px solid var(--composer-accent);
+  outline-offset: 3px;
+}
+
+/* Small screens */
+
+@media (max-width: 560px) {
+  .page-header ion-toolbar {
+    --min-height: 68px;
+    --padding-start: 20px;
+    --padding-end: 20px;
+  }
+
+  .composer-stage {
+    padding: 24px 16px;
+  }
+
+  .composer-card {
+    padding: 20px;
+    border-radius: 26px;
+  }
+
+  .author-copy strong {
+    font-size: .88rem;
+  }
+
+  .author-copy span {
+    font-size: .75rem;
+  }
+
+  .composer-card > ion-textarea {
+    min-height: 120px;
+    margin-top: 20px;
+    font-size: .95rem;
+  }
+
+  .publish-button {
+    padding-inline: 20px;
+    font-size: .86rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .composer-stage {
+    padding-inline: 12px;
+  }
+
+  .composer-card {
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  .author-avatar {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .composer-identity {
+    gap: 9px;
+  }
+
+  .author-copy strong {
+    font-size: .82rem;
+  }
+
+  .author-copy span {
+    font-size: .7rem;
+  }
+
+  .tool-actions {
+    gap: 0;
+  }
+
+  .tool-button {
+    width: 32px;
+  }
+
+  .tool-button ion-icon {
+    font-size: 1.25rem;
+  }
+
+  .publish-button {
+    padding-inline: 16px;
+  }
+
+  .character-count {
+    flex-basis: 100%;
+    order: 1;
+    margin-left: 0;
+    text-align: right;
+  }
+
+  .page-footer .page-nav.add-post-nav {
+    padding-inline: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .publish-button {
+    transition: none;
+  }
+}
+/* Keep the composer surface consistent with the active theme. */
+
+:host .composer-stage .composer-card {
+  background: var(--composer-surface) !important;
+  background-color: var(--composer-surface) !important;
+  color: var(--composer-copy) !important;
+  border-color: var(--composer-line) !important;
+}
+
+:host .composer-stage .composer-card .composer-header,
+:host .composer-stage .composer-card .composer-identity,
+:host .composer-stage .composer-card .author-copy,
+:host .composer-stage .composer-card .composer-tools,
+:host .composer-stage .composer-card .tool-actions {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+:host .composer-stage .composer-card .author-copy strong {
+  color: var(--composer-copy) !important;
+  -webkit-text-fill-color: var(--composer-copy) !important;
+}
+
+:host .composer-stage .composer-card .author-copy span {
+  color: var(--composer-accent) !important;
+  -webkit-text-fill-color: var(--composer-accent) !important;
+}
+
+:host .composer-stage .composer-card .close-button,
+:host .composer-stage .composer-card .tool-button {
+  color: var(--composer-accent) !important;
+}
+
+:host .composer-stage .composer-card .composer-tools {
+  border-top-color: var(--composer-line) !important;
+}
+
+:host .composer-stage .composer-card .publish-button {
+  background: var(--composer-primary) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}

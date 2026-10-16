@@ -1,0 +1,220 @@
+<button
+  type="button"
+  [class.settings-trigger]="preferences"
+  [class.dots-trigger]="!preferences"
+  [attr.aria-label]="preferences ? 'Saved comments and comment settings' : 'More comment options'"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="modalOpen"
+  (click)="show($event)"
+>
+  @if (preferences) {
+    <span>Saved &amp; comment settings</span>
+  } @else {
+    <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
+  }
+</button>
+
+<ion-modal
+  class="tali-comment-sheet"
+  [isOpen]="modalOpen"
+  [initialBreakpoint]="1"
+  [breakpoints]="[0, 1]"
+  [handle]="true"
+  [backdropDismiss]="true"
+  (didDismiss)="close()"
+>
+  <ng-template>
+    <section class="sheet" aria-label="Comment options">
+      <header>
+        <h2>{{ preferences ? 'Saved & comment settings' : 'Comment options' }}</h2>
+
+        <button
+          class="close"
+          type="button"
+          aria-label="Close comment options"
+          (click)="close()"
+        >
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </header>
+
+      @if (preferences) {
+        @if (!accounts.selectedAccount()) {
+          <p class="empty">Select an account to manage comments.</p>
+        } @else {
+          <h3>Saved comments</h3>
+
+          @for (item of prefs.current.saved; track item.key) {
+            <div class="setting-row saved-row">
+              <div>
+                <strong>{{ item.comment.authorName }}</strong>
+                <p>{{ item.comment.body }}</p>
+                <small>Saved copy</small>
+              </div>
+              <button type="button" (click)="removeSaved(item.key)">
+                Remove
+              </button>
+            </div>
+          } @empty {
+            <p class="empty">No saved comments.</p>
+          }
+
+          <h3>Hidden comments</h3>
+
+          @for (key of prefs.current.hidden; track key) {
+            <div class="setting-row">
+              <span>{{ hiddenLabel(key) }}</span>
+              <button type="button" (click)="restore(key)">Restore</button>
+            </div>
+          } @empty {
+            <p class="empty">No hidden comments.</p>
+          }
+
+          @for (kind of kinds; track kind) {
+            <h3>{{ kind | titlecase }} in comments</h3>
+
+            @for (id of prefs.current[kind]; track id) {
+              <div class="setting-row">
+                <span>{{ authorName(id) }}</span>
+                <button type="button" (click)="removeAuthor(id, kind)">
+                  Remove
+                </button>
+              </div>
+            } @empty {
+              <p class="empty">No accounts.</p>
+            }
+          }
+
+          <h3>Local reports</h3>
+          <p class="scope">These reports have not been sent to an admin.</p>
+
+          @for (item of prefs.current.reports; track item.key) {
+            <div class="setting-row saved-row">
+              <div>
+                <strong>{{ item.comment.authorName }}</strong>
+                <p>{{ item.comment.body }}</p>
+                <small>
+                  {{ item.reason }} · {{ item.reportedAt | date:'short' }}
+                </small>
+              </div>
+              <button type="button" (click)="removeReport(item.key)">
+                Remove
+              </button>
+            </div>
+          } @empty {
+            <p class="empty">No local reports.</p>
+          }
+        }
+      } @else if (reportForm) {
+        <form (ngSubmit)="submitReport()">
+          <label for="tali-comment-report-reason">Reason</label>
+
+          <select
+            id="tali-comment-report-reason"
+            name="reason"
+            [(ngModel)]="reason"
+          >
+            <option>Spam</option>
+            <option>Harassment or bullying</option>
+            <option>Hate speech</option>
+            <option>Scam or misleading content</option>
+            <option>Other</option>
+          </select>
+
+          <p class="scope">
+            This saves a report on this device. No admin delivery is connected.
+          </p>
+
+          <button class="primary" type="submit">Save local report</button>
+          <button class="row" type="button" (click)="reportForm = false">
+            Back
+          </button>
+        </form>
+      } @else if (confirmingBlock) {
+        <p>Block {{ comment?.authorName }} in comments?</p>
+
+        <p class="scope">
+          Their comments will be hidden from your selected account
+          in the feed preview and comments view on this device.
+          Their ability to post and your chat settings are unchanged.
+        </p>
+
+        <button
+          class="row danger"
+          type="button"
+          (click)="authorAction('blocked')"
+        >
+          Block in comments
+        </button>
+
+        <button class="row" type="button" (click)="confirmingBlock = false">
+          Cancel
+        </button>
+      } @else {
+        <button class="row" type="button" (click)="copy()">
+          <ion-icon name="link-outline" aria-hidden="true"></ion-icon>
+          <span>Copy comment &amp; post link</span>
+        </button>
+
+        <button class="row" type="button" (click)="save()">
+          <ion-icon name="bookmark-outline" aria-hidden="true"></ion-icon>
+          <span>{{ isSaved ? 'Unsave' : 'Save' }}</span>
+        </button>
+
+        @if (isPostOwner) {
+          <button class="row" type="button" (click)="toggleOwnerHidden()">
+            <ion-icon name="eye-off-outline" aria-hidden="true"></ion-icon>
+            <span>{{ ownerHidden ? 'Unhide comment' : 'Hide comment' }}</span>
+          </button>
+        } @else if (!ownComment) {
+          <button class="row" type="button" (click)="hide()">
+            <ion-icon name="eye-off-outline" aria-hidden="true"></ion-icon>
+            <span>Not interested</span>
+          </button>
+        }
+
+        @if (!ownComment) {
+          <button class="row" type="button" (click)="authorAction('muted')">
+            <ion-icon name="volume-mute-outline" aria-hidden="true"></ion-icon>
+            <span>
+              {{ prefs.current.muted.includes(comment?.authorId ?? -1) ? 'Unmute' : 'Mute' }}
+              comments
+            </span>
+          </button>
+
+          <button class="row" type="button" (click)="authorAction('restricted')">
+            <ion-icon name="shield-half-outline" aria-hidden="true"></ion-icon>
+            <span>
+              {{ prefs.restricted(comment?.authorId ?? -1) ? 'Unrestrict' : 'Restrict' }}
+              comments
+            </span>
+          </button>
+
+          <div class="divider"></div>
+
+          <button class="row danger" type="button" (click)="authorAction('blocked')">
+            <ion-icon name="ban-outline" aria-hidden="true"></ion-icon>
+            <span>Block in comments</span>
+          </button>
+
+          <button class="row danger" type="button" (click)="beginReport()">
+            <ion-icon name="flag-outline" aria-hidden="true"></ion-icon>
+            <span>Report comment</span>
+          </button>
+        }
+
+        <p class="scope">
+          Comment preferences apply to your selected account on this device.
+        </p>
+      }
+
+      @if (error) {
+        <p class="error" role="alert">{{ error }}</p>
+      }
+
+      @if (preferences && prefs.messageFor(postId)) {
+        <p class="notice" role="status">{{ prefs.messageFor(postId) }}</p>
+      }
+    </section>
+  </ng-template>
+</ion-modal>

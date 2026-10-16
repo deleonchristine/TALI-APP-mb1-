@@ -1,41 +1,271 @@
-<ion-header class="page-header ion-no-border">
-  <ion-toolbar><h1>Search</h1></ion-toolbar>
-</ion-header>
-<ion-content class="page-content" [fullscreen]="true">
-  <ion-searchbar [value]="query" (ionInput)="setQuery($any($event).detail.value ?? '')" placeholder="Search people and topics" [debounce]="100" aria-label="Search people and topics"></ion-searchbar>
-  @if (!query.trim()) {
-    <section class="section-block">
-      <h2>Trending topics</h2>
-      @for (topic of topics; track topic) {
-        <button class="topic-row" (click)="setQuery(topic)"><ion-icon name="trending-up-outline"></ion-icon><span>{{ topic }}</span><ion-icon name="search-outline"></ion-icon></button>
+<ion-content class="search-content" [fullscreen]="true">
+  <main class="search-shell">
+    <header class="search-heading">
+      <h1>Search</h1>
+      <p>Find your people. Explore new ideas.</p>
+    </header>
+
+    <div class="search-field" role="search">
+      <ion-icon
+        class="search-field-icon"
+        name="search-outline"
+        aria-hidden="true"
+      ></ion-icon>
+
+      <input
+        #searchInput
+        class="search-input"
+        type="search"
+        name="search"
+        [value]="query"
+        (input)="setQuery(searchInput.value)"
+        placeholder="Search people and topics"
+        aria-label="Search people and topics"
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+
+      @if (query) {
+        <button
+          class="clear-search"
+          type="button"
+          aria-label="Clear search"
+          (click)="setQuery(''); searchInput.focus()"
+        >
+          <ion-icon
+            name="close-outline"
+            aria-hidden="true"
+          ></ion-icon>
+        </button>
       }
-    </section>
-  }
-  <section class="section-block">
-    <h2>People</h2>
-    @for (person of filteredPeople; track person.username) {
-      <div class="person-row"><a class="person-profile-link" [routerLink]="['/profile', person.id]"><ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div></a><ion-button fill="outline" size="small" [routerLink]="['/profile', person.id]">View</ion-button></div>
-    } @empty {
-      <p class="empty-state">{{ query.trim() ? 'No people match your search.' : 'No people to show yet.' }}</p>
+    </div>
+
+    @if (!query.trim()) {
+      <section class="search-section" aria-labelledby="trending-heading">
+        <div class="section-heading">
+          <ion-icon
+            name="trending-up-outline"
+            aria-hidden="true"
+          ></ion-icon>
+          <h2 id="trending-heading">Trending topics</h2>
+        </div>
+
+        <div class="topic-list">
+          @for (topic of topics; track topic) {
+            <button
+              class="topic-row"
+              type="button"
+              (click)="setQuery(topic)"
+            >
+              <ion-icon
+                class="topic-icon"
+                name="trending-up-outline"
+                aria-hidden="true"
+              ></ion-icon>
+
+              <span>{{ topic }}</span>
+
+              <ion-icon
+                class="topic-arrow"
+                name="arrow-up-outline"
+                aria-hidden="true"
+              ></ion-icon>
+            </button>
+          }
+        </div>
+      </section>
     }
-  </section>
-  @if (query.trim()) {
-    <section class="section-block">
-      <h2>Topics</h2>
-      @for (topic of filteredTopics; track topic) {
-        <button class="topic-row" (click)="query = topic"><ion-icon name="trending-up-outline"></ion-icon><span>{{ topic }}</span><ion-icon name="search-outline"></ion-icon></button>
-      } @empty {
-        <p class="empty-state">No topics match your search.</p>
-      }
+
+    <section class="search-section" aria-labelledby="people-heading">
+      <div class="section-heading">
+        <ion-icon
+          class="people-heading-icon"
+          name="people-outline"
+          aria-hidden="true"
+        ></ion-icon>
+        <h2 id="people-heading">People</h2>
+      </div>
+
+      <div class="people-list">
+        @for (person of filteredPeople; track person.id) {
+          <div class="person-row">
+            <a
+              class="person-profile-link"
+              [routerLink]="['/profile', person.id]"
+            >
+              <ion-avatar class="person-avatar">
+                @if (
+                  person.profileImage &&
+                  accountService.canViewProfileImage(
+                    person,
+                    accountService.selectedAccount()
+                  )
+                ) {
+                  <img [src]="person.profileImage" alt="" />
+                } @else {
+                  <ion-icon
+                    name="person-circle-outline"
+                    aria-hidden="true"
+                  ></ion-icon>
+                }
+              </ion-avatar>
+
+              <div class="person-copy">
+                <strong>{{ person.name }}</strong>
+                <span>{{ person.username }}</span>
+              </div>
+            </a>
+
+            <a
+              class="view-profile"
+              [routerLink]="['/profile', person.id]"
+              [attr.aria-label]="'View ' + person.name + ' profile'"
+            >
+              View
+            </a>
+          </div>
+        } @empty {
+          <div class="empty-state" role="status">
+            <ion-icon
+              [name]="query.trim() ? 'search-outline' : 'people-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+
+            <h3>
+              {{
+                query.trim()
+                  ? 'No people found'
+                  : 'Discover people on Tali'
+              }}
+            </h3>
+
+            <p>
+              {{
+                query.trim()
+                  ? 'Try another name or username.'
+                  : 'Search a name or username to get started.'
+              }}
+            </p>
+          </div>
+        }
+      </div>
     </section>
-  }
+
+    @if (query.trim()) {
+      <section class="search-section" aria-labelledby="topics-heading">
+        <div class="section-heading">
+          <ion-icon
+            name="trending-up-outline"
+            aria-hidden="true"
+          ></ion-icon>
+          <h2 id="topics-heading">Topics</h2>
+        </div>
+
+        <div class="topic-list">
+          @for (topic of filteredTopics; track topic) {
+            <button
+              class="topic-row"
+              type="button"
+              (click)="setQuery(topic)"
+            >
+              <ion-icon
+                class="topic-icon"
+                name="trending-up-outline"
+                aria-hidden="true"
+              ></ion-icon>
+
+              <span>{{ topic }}</span>
+
+              <ion-icon
+                class="topic-arrow"
+                name="arrow-up-outline"
+                aria-hidden="true"
+              ></ion-icon>
+            </button>
+          } @empty {
+            <p class="topics-empty" role="status">
+              No topics match your search.
+            </p>
+          }
+        </div>
+      </section>
+    }
+  </main>
 </ion-content>
-<ion-footer class="page-footer ion-no-border"><ion-toolbar>
-  <nav class="page-nav" aria-label="Main navigation">
-    <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><img class="navigation-icon house-navigation-icon" slot="icon-only" src="assets/house.png" alt="" aria-hidden="true"></ion-button>
-    <ion-button fill="clear" routerLink="/messages" (click)="viewState.handleTabTap('/messages', 'tali-view-messages')" aria-label="Messages"><img class="navigation-icon send-navigation-icon" slot="icon-only" src="assets/send-horizontal.png" alt="" aria-hidden="true"></ion-button>
-    <ion-button fill="clear" class="compose-button" routerLink="/add-post" (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-    <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" (click)="viewState.handleTabTap('/activity', 'tali-view-activity')" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
-    <ion-button fill="clear" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
-  </nav>
-</ion-toolbar></ion-footer>
+
+<ion-footer class="search-footer ion-no-border">
+  <ion-toolbar>
+    <nav class="page-nav" aria-label="Main navigation">
+      <ion-button
+        fill="clear"
+        routerLink="/home"
+        (click)="viewState.handleTabTap('/home', 'tali-view-home')"
+        aria-label="Home"
+      >
+        <img
+          class="navigation-icon"
+          slot="icon-only"
+          src="assets/house.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        routerLink="/messages"
+        (click)="viewState.handleTabTap('/messages', 'tali-view-messages')"
+        aria-label="Messages"
+      >
+        <img
+          class="navigation-icon"
+          slot="icon-only"
+          src="assets/send-horizontal.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        class="compose-button"
+        routerLink="/add-post"
+        (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')"
+        aria-label="Create post"
+      >
+        <ion-icon slot="icon-only" name="add-circle"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        class="notification-nav-button"
+        routerLink="/activity"
+        (click)="viewState.handleTabTap('/activity', 'tali-view-activity')"
+        aria-label="Activity"
+      >
+        <ion-icon
+          slot="icon-only"
+          name="notifications-outline"
+        ></ion-icon>
+
+        @if (unreadNotifications) {
+          <span class="notification-badge">
+            {{ unreadNotifications }}
+          </span>
+        }
+      </ion-button>
+
+      <ion-button
+        fill="clear"
+        routerLink="/profile"
+        (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')"
+        aria-label="Profile"
+      >
+        <ion-icon
+          slot="icon-only"
+          name="person-circle-outline"
+        ></ion-icon>
+      </ion-button>
+    </nav>
+  </ion-toolbar>
+</ion-footer>

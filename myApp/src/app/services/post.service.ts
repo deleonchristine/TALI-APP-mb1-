@@ -28,6 +28,7 @@ export interface PostComment {
   likes?: number[];
   reposts?: number[];
   shares?: number[];
+  hiddenByPostOwner?: boolean;
 }
 
 export interface Post {
@@ -82,7 +83,6 @@ export class PostService {
         .filter(isStoredPost)
         .map(restorePostDates);
 
-      // Merge the synchronous backup with IndexedDB.
       const savedPosts = mergePosts(posts, indexedPosts);
       const mergedPosts = this.changedBeforeHydration
         ? mergePosts(savedPosts, this.posts())
@@ -160,11 +160,7 @@ export class PostService {
 
     if (post && actor && !alreadyLiked && !post.notificationsDisabled) {
       this.notificationService?.notifyPostAction(
-        'like',
-        actor,
-        post.authorId,
-        post.id,
-        post.body,
+        'like', actor, post.authorId, post.id, post.body,
       );
     }
   }
@@ -183,7 +179,8 @@ export class PostService {
 
     if (
       parentCommentId !== null &&
-      !post.comments.some((comment) => comment.id === parentCommentId)
+      !this.visibleCommentsFor(post, account.id)
+        .some((comment) => comment.id === parentCommentId)
     ) {
       return null;
     }
@@ -211,22 +208,84 @@ export class PostService {
 
     if (!post.notificationsDisabled) {
       this.notificationService?.notifyPostAction(
-        'comment',
-        account,
-        post.authorId,
-        post.id,
-        text,
+        'comment', account, post.authorId, post.id, text,
       );
 
       this.notificationService?.notifyMentions(
-        account,
-        text,
-        accounts,
-        post.id,
+        account, text, accounts, post.id,
       );
     }
 
     return comment;
+  }
+
+  setCommentHidden(
+    postId: string,
+    commentId: string,
+    ownerId: number,
+    hidden: boolean,
+  ): boolean {
+    const post = this.posts().find((item) => item.id === postId);
+
+    if (
+      !post ||
+      post.trashedAt ||
+      post.authorId !== ownerId ||
+      !post.comments.some((item) => item.id === commentId)
+    ) {
+      return false;
+    }
+
+    this.posts.update((items) => items.map((item) =>
+      item.id !== postId ? item : {
+        ...item,
+        comments: item.comments.map((comment) =>
+          comment.id !== commentId ? comment : {
+            ...comment,
+            hiddenByPostOwner: hidden,
+          },
+        ),
+      },
+    ));
+
+    this.persistPosts();
+    return true;
+  }
+
+  visibleCommentsFor(
+    post: Post,
+    viewerId: number | null,
+  ): PostComment[] {
+    if (post.trashedAt) return [];
+
+    if (viewerId !== null && viewerId === post.authorId) {
+      return post.comments;
+    }
+
+    const excluded = new Set(
+      post.comments
+        .filter((item) => item.hiddenByPostOwner)
+        .map((item) => item.id),
+    );
+
+    let changed = true;
+
+    while (changed) {
+      changed = false;
+
+      for (const comment of post.comments) {
+        if (
+          comment.parentCommentId &&
+          excluded.has(comment.parentCommentId) &&
+          !excluded.has(comment.id)
+        ) {
+          excluded.add(comment.id);
+          changed = true;
+        }
+      }
+    }
+
+    return post.comments.filter((item) => !excluded.has(item.id));
   }
 
   toggleCommentLike(
@@ -234,12 +293,7 @@ export class PostService {
     commentId: string,
     accountId: number,
   ) {
-    this.updateCommentReaction(
-      postId,
-      commentId,
-      accountId,
-      'likes',
-    );
+    this.updateCommentReaction(postId, commentId, accountId, 'likes');
   }
 
   toggleCommentRepost(
@@ -248,13 +302,7 @@ export class PostService {
     accountId: number,
   ) {
     if (!isSettingEnabled('sharingEnabled', true)) return;
-
-    this.updateCommentReaction(
-      postId,
-      commentId,
-      accountId,
-      'reposts',
-    );
+    this.updateCommentReaction(postId, commentId, accountId, 'reposts');
   }
 
   recordCommentShare(
@@ -263,13 +311,7 @@ export class PostService {
     accountId: number,
   ) {
     if (!isSettingEnabled('sharingEnabled', true)) return;
-
-    this.updateCommentReaction(
-      postId,
-      commentId,
-      accountId,
-      'shares',
-    );
+    this.updateCommentReaction(postId, commentId, accountId, 'shares');
   }
 
   private updateCommentReaction(
@@ -281,7 +323,11 @@ export class PostService {
     const post = this.posts().find((item) => item.id === postId);
 
     if (!post || post.trashedAt) return;
-    if (!post.comments.some((comment) => comment.id === commentId)) return;
+
+    if (
+      !this.visibleCommentsFor(post, accountId)
+        .some((comment) => comment.id === commentId)
+    ) return;
 
     this.posts.update((posts) => posts.map((item) => {
       if (item.id !== postId) return item;
@@ -336,11 +382,7 @@ export class PostService {
 
     if (post && actor && !alreadyReposted && !post.notificationsDisabled) {
       this.notificationService?.notifyPostAction(
-        'repost',
-        actor,
-        post.authorId,
-        post.id,
-        post.body,
+        'repost', actor, post.authorId, post.id, post.body,
       );
     }
   }
@@ -355,20 +397,12 @@ export class PostService {
 
     if (post && !post.notificationsDisabled) {
       this.notificationService?.notifyPostAction(
-        'share',
-        actor,
-        post.authorId,
-        post.id,
-        post.body,
+        'share', actor, post.authorId, post.id, post.body,
       );
     }
   }
 
-  canViewPost(
-    post: Post,
-    viewer: Account | null,
-    accounts: Account[],
-  ) {
+  canViewPost(post: Post, viewer: Account | null, accounts: Account[]) {
     if (post.trashedAt) return false;
     if (post.archivedAt) return viewer?.id === post.authorId;
     if (viewer && post.authorId === viewer.id) return true;
@@ -378,25 +412,19 @@ export class PostService {
     }
 
     const author = accounts.find((account) => account.id === post.authorId);
-
     const areFriends = (first: Account, second: Account) =>
       first.followingIds.includes(second.id) &&
       second.followingIds.includes(first.id);
 
-    if (
-      author?.privacy === 'private' &&
-      !areFriends(author, viewer)
-    ) {
+    if (author?.privacy === 'private' && !areFriends(author, viewer)) {
       return false;
     }
 
     switch (post.audience) {
       case 'public':
         return true;
-
       case 'friends':
         return Boolean(author && areFriends(author, viewer));
-
       case 'friends-of-friends':
         return Boolean(author && accounts.some((friend) =>
           friend.id !== author.id &&
@@ -404,13 +432,10 @@ export class PostService {
           areFriends(author, friend) &&
           areFriends(friend, viewer),
         ));
-
       case 'selected-friends':
         return post.audienceAccountIds.includes(viewer.id);
-
       case 'hide-from':
         return !post.audienceAccountIds.includes(viewer.id);
-
       case 'only-me':
         return false;
     }
@@ -426,7 +451,6 @@ export class PostService {
         ? { ...post, authorName, authorUsername }
         : post,
     ));
-
     this.persistPosts();
   }
 
@@ -438,9 +462,7 @@ export class PostService {
         post.id !== postId ||
         post.authorId !== ownerId ||
         post.trashedAt
-      ) {
-        return post;
-      }
+      ) return post;
 
       updated = true;
       return { ...post, body: body.trim() };
@@ -462,9 +484,7 @@ export class PostService {
         post.id !== postId ||
         post.authorId !== ownerId ||
         post.trashedAt
-      ) {
-        return post;
-      }
+      ) return post;
 
       updated = true;
       return { ...post, notificationsDisabled: disabled };
@@ -481,9 +501,7 @@ export class PostService {
         post.id !== postId ||
         post.authorId !== ownerId ||
         post.trashedAt
-      ) {
-        return post;
-      }
+      ) return post;
 
       updated = true;
       return { ...post, archivedAt: new Date() };
@@ -500,9 +518,7 @@ export class PostService {
         post.id !== postId ||
         post.authorId !== ownerId ||
         post.trashedAt
-      ) {
-        return post;
-      }
+      ) return post;
 
       updated = true;
       return { ...post, archivedAt: null };
@@ -519,16 +535,10 @@ export class PostService {
         post.id !== postId ||
         post.authorId !== ownerId ||
         post.trashedAt
-      ) {
-        return post;
-      }
+      ) return post;
 
       updated = true;
-      return {
-        ...post,
-        trashedAt: new Date(),
-        archivedAt: null,
-      };
+      return { ...post, trashedAt: new Date(), archivedAt: null };
     }));
 
     if (updated) {
@@ -545,9 +555,7 @@ export class PostService {
         post.id !== postId ||
         post.authorId !== ownerId ||
         !post.trashedAt
-      ) {
-        return post;
-      }
+      ) return post;
 
       updated = true;
       return { ...post, trashedAt: null };
@@ -566,14 +574,9 @@ export class PostService {
       !existing ||
       existing.authorId !== ownerId ||
       !existing.trashedAt
-    ) {
-      return;
-    }
+    ) return;
 
-    this.posts.update((posts) =>
-      posts.filter((post) => post.id !== postId),
-    );
-
+    this.posts.update((posts) => posts.filter((post) => post.id !== postId));
     this.persistPosts();
     this.scheduleTrashCleanup();
   }
@@ -598,7 +601,6 @@ export class PostService {
 
   private persistPosts() {
     this.changedBeforeHydration = true;
-
     const updatedAt = new Date();
     const updatedPosts = this.posts().map((post) => ({
       ...post,
@@ -623,7 +625,7 @@ export class PostService {
 
     this.persistenceQueue = this.persistenceQueue
       .catch(() => {
-        /* Allow a later save to retry after a failed queued write. */
+        // Allow a later save to retry.
       })
       .then(() => saveBrowserData(postsStorageKey, snapshot));
 
@@ -666,10 +668,7 @@ export class PostService {
 
     const delay = Math.max(
       0,
-      Math.min(
-        nextExpiration - Date.now(),
-        24 * 60 * 60 * 1000,
-      ),
+      Math.min(nextExpiration - Date.now(), 24 * 60 * 60 * 1000),
     );
 
     this.trashCleanupTimer = window.setTimeout(() => {
@@ -689,7 +688,6 @@ function optionalNotificationService(): NotificationService | null {
   try {
     return inject(NotificationService);
   } catch {
-    // Keep direct construction working outside Angular.
     return null;
   }
 }
@@ -703,25 +701,15 @@ function isStoredPostList(value: unknown): value is Post[] {
   return Array.isArray(value);
 }
 
-function mergePosts(
-  savedPosts: Post[],
-  currentPosts: Post[],
-): Post[] {
-  const merged = new Map(
-    savedPosts.map((post) => [post.id, post]),
-  );
+function mergePosts(savedPosts: Post[], currentPosts: Post[]): Post[] {
+  const merged = new Map(savedPosts.map((post) => [post.id, post]));
 
   for (const post of currentPosts) {
     const saved = merged.get(post.id);
     const savedTime =
-      saved?.updatedAt?.getTime() ??
-      saved?.createdAt.getTime() ??
-      0;
-
+      saved?.updatedAt?.getTime() ?? saved?.createdAt.getTime() ?? 0;
     const currentTime =
-      post.updatedAt?.getTime() ??
-      post.createdAt.getTime() ??
-      0;
+      post.updatedAt?.getTime() ?? post.createdAt.getTime() ?? 0;
 
     if (!saved || currentTime >= savedTime) {
       merged.set(post.id, post);
@@ -754,7 +742,6 @@ function restorePostDates(post: Post): Post {
 
 function isStoredPost(value: unknown): value is Post {
   if (typeof value !== 'object' || value === null) return false;
-
   const post = value as Partial<Post>;
 
   const validIdList = (items: unknown) =>
@@ -769,7 +756,6 @@ function isStoredPost(value: unknown): value is Post {
       }
 
       const item = attachment as Partial<PostAttachment>;
-
       return typeof item.name === 'string' &&
         typeof item.type === 'string' &&
         typeof item.dataUrl === 'string';
@@ -778,10 +764,7 @@ function isStoredPost(value: unknown): value is Post {
   const validCommentList = (items: unknown) =>
     Array.isArray(items) &&
     items.every((comment) => {
-      if (typeof comment !== 'object' || comment === null) {
-        return false;
-      }
-
+      if (typeof comment !== 'object' || comment === null) return false;
       const item = comment as Partial<PostComment>;
 
       return typeof item.id === 'string' &&
@@ -797,7 +780,11 @@ function isStoredPost(value: unknown): value is Post {
         ) &&
         (item.likes === undefined || validIdList(item.likes)) &&
         (item.reposts === undefined || validIdList(item.reposts)) &&
-        (item.shares === undefined || validIdList(item.shares));
+        (item.shares === undefined || validIdList(item.shares)) &&
+        (
+          item.hiddenByPostOwner === undefined ||
+          typeof item.hiddenByPostOwner === 'boolean'
+        );
     });
 
   return typeof post.id === 'string' &&
@@ -811,18 +798,11 @@ function isStoredPost(value: unknown): value is Post {
     validCommentList(post.comments) &&
     validIdList(post.reposts) &&
     [
-      'public',
-      'friends',
-      'friends-of-friends',
-      'selected-friends',
-      'hide-from',
-      'only-me',
+      'public', 'friends', 'friends-of-friends',
+      'selected-friends', 'hide-from', 'only-me',
     ].includes(String(post.audience)) &&
     isValidDateValue(post.createdAt) &&
-    (
-      post.updatedAt === undefined ||
-      isValidDateValue(post.updatedAt)
-    ) &&
+    (post.updatedAt === undefined || isValidDateValue(post.updatedAt)) &&
     (
       post.archivedAt === undefined ||
       post.archivedAt === null ||
@@ -840,9 +820,6 @@ function isStoredPost(value: unknown): value is Post {
 }
 
 function isValidDateValue(value: unknown): value is string | Date {
-  if (!(typeof value === 'string' || value instanceof Date)) {
-    return false;
-  }
-
+  if (!(typeof value === 'string' || value instanceof Date)) return false;
   return Number.isFinite(new Date(value).getTime());
 }

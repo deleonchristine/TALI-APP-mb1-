@@ -1,17 +1,28 @@
 :host {
   display: block;
   min-width: 0;
+
   --post-copy: #f2f4f8;
   --post-secondary: #a0a6b2;
   --post-line: #30333b;
-  --post-menu: #1c1e24;
+  --post-menu: #101827;
+  --post-menu-card: #1b293b;
+  --post-menu-hover: #26384f;
+  --post-menu-accent: #a4c3ff;
+  --post-danger: #ff6177;
+  --post-menu-shadow: 0 16px 40px rgba(0, 0, 0, .35);
 }
 
 :host-context(html.app-light) {
   --post-copy: #182033;
   --post-secondary: #697386;
   --post-line: #dce2ec;
-  --post-menu: #fff;
+  --post-menu: #f1f4f9;
+  --post-menu-card: #ffffff;
+  --post-menu-hover: #edf3ff;
+  --post-menu-accent: #2141b4;
+  --post-danger: #ce3049;
+  --post-menu-shadow: 0 16px 40px rgba(24, 32, 51, .16);
 }
 
 .post-layout {
@@ -132,7 +143,9 @@
   font-size: 12px;
 }
 
-.post-time { flex-shrink: 0; }
+.post-time {
+  flex-shrink: 0;
+}
 
 .post-handle {
   display: block;
@@ -142,21 +155,25 @@
   white-space: nowrap;
 }
 
-.post-more {
+:host .post-more {
   display: grid;
   flex: 0 0 44px;
   width: 44px;
   height: 44px;
+  margin: 0;
   padding: 0;
   place-items: center;
-  border: 0;
+  border: 0 !important;
   border-radius: 50%;
   background: transparent !important;
-  color: var(--post-secondary);
+  box-shadow: none !important;
+  color: var(--post-secondary) !important;
   cursor: pointer;
 }
 
-.post-more ion-icon { font-size: 22px; }
+.post-more ion-icon {
+  font-size: 22px;
+}
 
 :host .post-card {
   box-sizing: border-box;
@@ -171,46 +188,41 @@
   color: var(--post-copy) !important;
 }
 
-.author-options-menu,
-.post-options-menu {
+/* Avatar profile actions. */
+:host .author-options-menu {
   position: absolute;
-  z-index: 20;
-  display: grid;
-  padding: 6px;
-  border: 1px solid var(--post-line);
-  border-radius: 14px;
-  background: var(--post-menu);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, .2);
-}
-
-.author-options-menu {
   top: 48px;
   left: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  display: grid;
   width: min(230px, calc(100vw - 40px));
+  padding: 6px;
+  border: 1px solid var(--post-line);
+  border-radius: 16px;
+  background: var(--post-menu-card) !important;
+  box-shadow: var(--post-menu-shadow);
 }
 
-.post-options-menu {
-  top: 48px;
-  right: 0;
-  width: min(290px, calc(100vw - 40px));
-}
-
-.author-options-menu a,
-.author-options-menu button,
-.post-options-menu a,
-.post-options-menu button {
+:host .author-options-menu > a,
+:host .author-options-menu > button {
+  appearance: none;
+  -webkit-appearance: none;
   box-sizing: border-box;
   display: flex;
-  width: 100%;
-  min-height: 44px;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
   padding: 10px 12px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
+  border: 0 !important;
+  border-radius: 10px;
+  background: transparent !important;
+  box-shadow: none !important;
   color: var(--post-copy) !important;
+  -webkit-text-fill-color: var(--post-copy) !important;
   font: inherit;
   font-size: 14px;
   text-align: left;
@@ -218,14 +230,130 @@
   cursor: pointer;
 }
 
-.author-options-menu > :first-child {
-  border-bottom: 1px solid var(--post-line);
+.author-options-menu ion-icon {
+  flex: 0 0 23px;
+  font-size: 23px;
+  color: var(--post-menu-accent);
 }
 
-.author-options-menu ion-icon { font-size: 23px; }
+/* Grouped post dropdown stays below the dots. */
+:host .post-options-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  display: grid;
+  gap: 9px;
+  width: min(280px, calc(100vw - 40px));
+  max-height: min(70dvh, 480px);
+  margin: 0;
+  padding: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--post-line) !important;
+  border-radius: 24px !important;
+  background: var(--post-menu) !important;
+  box-shadow: var(--post-menu-shadow) !important;
+  color: var(--post-copy);
+  scrollbar-width: thin;
+  scrollbar-color: var(--post-secondary) transparent;
+}
 
-.post-options-menu .destructive-option {
-  color: #e24d61 !important;
+:host .post-menu-group {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 17px;
+  background: var(--post-menu-card) !important;
+}
+
+:host .post-options-menu .post-menu-group > a,
+:host .post-options-menu .post-menu-group > button {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0 !important;
+  padding: 13px 14px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--post-menu-card) !important;
+  box-shadow: none !important;
+  color: var(--post-copy) !important;
+  -webkit-text-fill-color: var(--post-copy) !important;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  text-decoration: none !important;
+  text-transform: none;
+  white-space: normal;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.post-menu-group > a > span,
+.post-menu-group > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.post-menu-group > :not(:first-child)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 14px;
+  left: 14px;
+  height: 1px;
+  background: var(--post-line);
+  opacity: .75;
+  pointer-events: none;
+}
+
+.post-menu-group svg,
+.post-menu-group ion-icon {
+  display: block;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  color: var(--post-menu-accent);
+  font-size: 22px;
+  pointer-events: none;
+}
+
+.post-menu-group svg {
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:host .post-options-menu .post-menu-group > .destructive-option {
+  color: var(--post-danger) !important;
+  -webkit-text-fill-color: var(--post-danger) !important;
+}
+
+.post-menu-group .destructive-option svg,
+.post-menu-group .destructive-option ion-icon {
+  color: var(--post-danger);
+}
+
+:host .post-options-menu .post-menu-group > a:focus-visible,
+:host .post-options-menu .post-menu-group > button:focus-visible {
+  outline: 2px solid var(--post-menu-accent);
+  outline-offset: -3px;
+  background: var(--post-menu-hover) !important;
 }
 
 .post-edit-form {
@@ -298,7 +426,9 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.post-attachments::-webkit-scrollbar { display: none; }
+.post-attachments::-webkit-scrollbar {
+  display: none;
+}
 
 .post-media {
   display: block;
@@ -417,8 +547,7 @@
   line-height: 1.5;
 }
 
-/* Homepage comment preview and straight connector. */
-
+/* Homepage comment preview. */
 :host .has-comment-preview > .post-card {
   position: relative;
   padding-left: 52px !important;
@@ -435,7 +564,9 @@
   pointer-events: none;
 }
 
-.feed-comment-preview { margin-top: 16px; }
+.feed-comment-preview {
+  margin-top: 16px;
+}
 
 .feed-comment-row {
   display: grid;
@@ -448,11 +579,16 @@
   text-decoration: none !important;
 }
 
-.feed-comment-copy { min-width: 0; }
+.feed-comment-copy {
+  min-width: 0;
+}
 
 .feed-comment-identity {
+  position: relative;
   flex-wrap: wrap;
   gap: 6px;
+  min-height: 28px;
+  padding-right: 36px;
 }
 
 .feed-comment-identity a {
@@ -461,6 +597,12 @@
   font-weight: 600;
   text-decoration: none !important;
   overflow-wrap: anywhere;
+}
+
+.preview-comment-options {
+  position: absolute;
+  top: -9px;
+  right: -8px;
 }
 
 :host .feed-comment-copy p.feed-comment-text {
@@ -506,14 +648,42 @@ a:focus-visible {
     outline: 3px solid var(--ion-color-primary);
     outline-offset: 3px;
   }
+
   100% {
     outline: 3px solid transparent;
     outline-offset: 3px;
   }
 }
 
+@media (hover: hover) {
+  :host .post-options-menu .post-menu-group > a:hover,
+  :host .post-options-menu .post-menu-group > button:hover,
+  :host .author-options-menu > a:hover,
+  :host .author-options-menu > button:hover {
+    background: var(--post-menu-hover) !important;
+  }
+
+  :host .post-more:hover {
+    background: var(--post-menu-hover) !important;
+  }
+}
+
 @media (max-width: 380px) {
-  .preview-actions { gap: 4px; }
+  .preview-actions {
+    gap: 4px;
+  }
+
+  :host .post-options-menu {
+    width: min(265px, calc(100vw - 32px));
+    padding: 8px;
+    gap: 8px;
+  }
+
+  :host .post-options-menu .post-menu-group > a,
+  :host .post-options-menu .post-menu-group > button {
+    padding-inline: 12px;
+    font-size: 12px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

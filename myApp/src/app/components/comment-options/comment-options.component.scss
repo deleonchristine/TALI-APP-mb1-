@@ -1,0 +1,416 @@
+:host {
+  display: inline-block;
+  flex: 0 0 auto;
+
+  --menu-blue: #92b5ff;
+  --menu-muted: #a8b9d4;
+}
+
+:host-context(html.app-light) {
+  --menu-blue: #2141b4;
+  --menu-muted: #566b8c;
+}
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dots-trigger {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 50%;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--menu-muted) !important;
+}
+
+.dots-trigger ion-icon {
+  font-size: 22px;
+}
+
+.settings-trigger {
+  min-height: 44px;
+  margin: 0;
+  padding: 4px 0;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--menu-blue) !important;
+  font-size: 12px;
+  text-align: left;
+}
+
+::ng-deep ion-modal.tali-comment-sheet {
+  --menu-surface: #101827;
+  --menu-card: #1b293b;
+  --menu-copy: #f2f5fb;
+  --menu-muted: #a8b9d4;
+  --menu-line: #34445b;
+  --menu-blue: #92b5ff;
+  --menu-red: #ff485b;
+  --menu-hover: #24364d;
+
+  --height: auto;
+  --max-height: 90dvh;
+  --width: min(100%, 480px);
+  --border-radius: 28px 28px 0 0;
+  --background: #101827;
+  --backdrop-opacity: .55;
+
+  color-scheme: dark;
+}
+
+::ng-deep html.app-light ion-modal.tali-comment-sheet {
+  --menu-surface: #f5f7fc;
+  --menu-card: #ffffff;
+  --menu-copy: #15264a;
+  --menu-muted: #566b8c;
+  --menu-line: #e3e9f2;
+  --menu-blue: #2141b4;
+  --menu-red: #d52b43;
+  --menu-hover: #edf3ff;
+
+  --background: #f5f7fc;
+
+  color-scheme: light;
+}
+
+::ng-deep ion-modal.tali-comment-sheet::part(content) {
+  overflow: hidden;
+  border-radius: 28px 28px 0 0;
+  background: var(--menu-surface, #101827) !important;
+  box-shadow: 0 -12px 48px rgba(0, 0, 0, .3);
+}
+
+::ng-deep ion-modal.tali-comment-sheet::part(handle) {
+  width: 38px;
+  height: 4px;
+  background: var(--menu-muted, #a8b9d4);
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  max-height: 85dvh;
+  margin: 0;
+  padding: 24px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--menu-surface, #101827) !important;
+  color: var(--menu-copy, #f2f5fb) !important;
+  font-family: inherit;
+  text-align: left;
+  scrollbar-width: thin;
+  scrollbar-color: var(--menu-muted) transparent;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet * {
+  box-sizing: border-box;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet button {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: var(--menu-copy, #f2f5fb) !important;
+  font: inherit;
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* Settings and confirmation headings. */
+::ng-deep ion-modal.tali-comment-sheet .sheet header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 12px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet h2 {
+  flex: 1;
+  min-width: 0;
+  margin: 0 4px;
+  color: var(--menu-copy);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet h3 {
+  margin: 24px 4px 10px;
+  color: var(--menu-copy);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .close {
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .close ion-icon {
+  font-size: 24px;
+}
+
+/* Common action rows. */
+::ng-deep ion-modal.tali-comment-sheet .sheet .row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 0;
+  background: var(--menu-card, #1b293b) !important;
+  color: var(--menu-copy) !important;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .row > span {
+  order: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .row ion-icon {
+  order: 1;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  color: var(--menu-blue);
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .row.danger,
+::ng-deep ion-modal.tali-comment-sheet .sheet .row.danger ion-icon {
+  color: var(--menu-red) !important;
+}
+
+/*
+ * Main options view:
+ * Copy / Save + Not interested / Mute + Restrict + Block + Report.
+ */
+::ng-deep ion-modal.tali-comment-sheet .sheet:has(> .row) > header,
+::ng-deep ion-modal.tali-comment-sheet .sheet:has(> .row) > .divider,
+::ng-deep ion-modal.tali-comment-sheet .sheet:has(> .row) > .scope {
+  display: none;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:first-of-type {
+  margin-bottom: 14px;
+  border-radius: 20px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:nth-of-type(2) {
+  border-radius: 20px 20px 0 0;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:nth-of-type(3) {
+  margin-bottom: 14px;
+  border-radius: 0 0 20px 20px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:nth-of-type(4) {
+  border-radius: 20px 20px 0 0;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:last-of-type {
+  border-radius: 0 0 20px 20px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:nth-of-type(3)::before,
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:nth-of-type(n + 5)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 18px;
+  left: 18px;
+  height: 1px;
+  background: var(--menu-line);
+}
+
+/* Own comment: Copy and Save each have their own card. */
+::ng-deep ion-modal.tali-comment-sheet .sheet > .row:nth-of-type(2):last-of-type {
+  border-radius: 20px;
+}
+
+/* Block confirmation keeps its explanation and heading. */
+::ng-deep ion-modal.tali-comment-sheet .sheet:has(> p:not([class])) > header {
+  display: flex;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet:has(> p:not([class])) > .scope {
+  display: block;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet:has(> p:not([class])) > .row {
+  margin: 10px 0 0;
+  border-radius: 16px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet > p:not([class]) {
+  margin: 12px 4px;
+  color: var(--menu-copy);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Settings lists. */
+::ng-deep ion-modal.tali-comment-sheet .sheet .setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--menu-line);
+  background: var(--menu-card);
+  color: var(--menu-copy);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .setting-row > div {
+  min-width: 0;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .setting-row p {
+  margin: 5px 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .setting-row button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--menu-blue) !important;
+  font-size: 12px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .scope,
+::ng-deep ion-modal.tali-comment-sheet .sheet .empty,
+::ng-deep ion-modal.tali-comment-sheet .sheet small {
+  color: var(--menu-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .scope,
+::ng-deep ion-modal.tali-comment-sheet .sheet .empty {
+  margin: 10px 4px;
+}
+
+/* Report form. */
+::ng-deep ion-modal.tali-comment-sheet .sheet label {
+  display: block;
+  margin: 12px 4px 8px;
+  color: var(--menu-copy);
+  font-size: 14px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet select {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--menu-line) !important;
+  border-radius: 12px;
+  box-shadow: none !important;
+  background: var(--menu-card) !important;
+  color: var(--menu-copy) !important;
+  font: inherit;
+  font-size: 14px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet select option {
+  background: var(--menu-card);
+  color: var(--menu-copy);
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .primary {
+  width: 100%;
+  min-height: 46px;
+  margin: 12px 0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #2141b4 !important;
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet form .row {
+  border-radius: 12px;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .error {
+  margin: 12px 4px;
+  color: var(--menu-red);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet .notice {
+  margin: 12px 4px;
+  color: var(--menu-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+::ng-deep ion-modal.tali-comment-sheet .sheet button:focus-visible,
+::ng-deep ion-modal.tali-comment-sheet .sheet select:focus-visible,
+.dots-trigger:focus-visible,
+.settings-trigger:focus-visible {
+  outline: 2px solid var(--menu-blue);
+  outline-offset: -3px;
+}
+
+@media (hover: hover) {
+  ::ng-deep ion-modal.tali-comment-sheet .sheet .row:hover,
+  ::ng-deep ion-modal.tali-comment-sheet .sheet .close:hover,
+  ::ng-deep ion-modal.tali-comment-sheet .sheet .setting-row button:hover {
+    background: var(--menu-hover) !important;
+  }
+}
+
+@media (max-width: 360px) {
+  ::ng-deep ion-modal.tali-comment-sheet .sheet {
+    padding-inline: 14px;
+  }
+
+  ::ng-deep ion-modal.tali-comment-sheet .sheet .row {
+    min-height: 54px;
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+
+  ::ng-deep ion-modal.tali-comment-sheet .sheet .setting-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}

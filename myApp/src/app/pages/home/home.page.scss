@@ -5,65 +5,95 @@
   --padding-bottom: 0;
 }
 
-/* Original header */
+/* Compact blue header */
 
-.home-header,
-.home-footer {
-  --background: var(--page-bg);
-  --border-color: var(--page-border);
+:host .home-header {
+  background: #2141b4 !important;
+  box-shadow: none;
 }
 
-.home-header ion-toolbar {
-  --background: var(--page-bg);
-  --color: var(--page-text);
-  --border-color: var(--page-border);
-  min-height: 76px;
-  padding: 6px 14px;
+:host .home-header ion-toolbar {
+  --background: #2141b4;
+  --color: #ffffff;
+  --border-width: 0;
+  --min-height: 56px;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+
+  min-height: 56px;
+  padding: 0 !important;
 }
 
-.home-toolbar-row {
-  display: grid;
+:host .home-header .home-toolbar-row {
   box-sizing: border-box;
+  display: flex !important;
   width: 100%;
   max-width: 680px;
-  margin-inline: auto;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  height: 56px;
+  min-height: 56px;
   align-items: center;
+  justify-content: space-between !important;
+  gap: 16px;
+  margin-inline: auto;
+  padding: 0 16px;
 }
 
-.home-brand-mark {
-  display: grid;
-  width: 72px;
-  height: 72px;
-  place-items: center;
-  justify-self: center;
+/* Hide the old spacer used to center the logo */
+
+:host .home-toolbar-row > span[aria-hidden="true"] {
+  display: none !important;
 }
 
-.home-brand-mark img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.home-brand-mark .logo-on-light {
-  display: none;
-}
-
-:host-context(html.app-light) .home-brand-mark .logo-on-dark {
-  display: none;
-}
-
-:host-context(html.app-light) .home-brand-mark .logo-on-light {
-  display: block;
-}
-
-.search-button {
-  --color: var(--page-text);
-  width: 40px;
-  height: 40px;
+:host .home-header .home-brand-mark {
+  position: static !important;
+  display: flex;
+  width: 52px;
+  height: 44px;
+  flex: 0 0 52px;
+  align-items: center;
+  justify-content: flex-start;
   margin: 0;
-  font-size: 1.2rem;
+  transform: none !important;
+}
+
+:host .home-header .home-brand-mark img {
+  position: static !important;
+  width: 52px;
+  height: 44px;
+  object-fit: contain;
+  transform: none !important;
+}
+
+/* Keep the dark-background logo on the blue header in both themes */
+
+:host .home-header .home-brand-mark .logo-on-dark {
+  display: block !important;
+}
+
+:host .home-header .home-brand-mark .logo-on-light {
+  display: none !important;
+}
+
+:host .home-header .search-button {
+  position: static !important;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  margin: 0 0 0 auto;
+  font-size: 1.4rem;
+  transform: none !important;
+
+  --background: transparent;
+  --color: #ffffff;
+  --border-radius: 50%;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+:host .home-header .search-button ion-icon {
+  color: #ffffff !important;
 }
 
 /* Centered responsive feed */
@@ -78,72 +108,87 @@
   background: var(--page-bg);
 }
 
-/* Feed tabs */
+/* Centered tabs with a straight underline */
 
 .feed-tabs {
-  display: grid;
   box-sizing: border-box;
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   width: 100%;
-  padding: 6px 16px 10px;
-  margin-bottom: 0;
+  margin: 0;
+  padding: 0 16px;
   border-bottom: 1px solid var(--page-border);
 }
 
-.feed-tab {
+:host .feed-tabs .feed-tab {
+  position: relative;
   justify-self: center;
   max-width: 100%;
-  min-height: 44px;
-  padding: 8px 18px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
+  min-height: 56px;
+  padding: 12px 18px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: var(--page-muted);
   font: inherit;
   font-size: 15px;
   font-weight: 500;
   text-decoration: none;
+  box-shadow: none !important;
   cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease;
+  transition: color 180ms ease;
 }
 
-.feed-tab.is-active {
-  border: 0;
-  background: rgba(65, 105, 225, 0.22);
-  color: #dbe6ff;
+:host .feed-tabs .feed-tab::after {
+  position: absolute;
+  right: 18px;
+  bottom: 0;
+  left: 18px;
+  height: 3px;
+  border-radius: 0;
+  background: transparent;
+  content: "";
+}
+
+:host .feed-tabs .feed-tab.is-active {
+  background: transparent !important;
+  color: var(--page-text);
   font-weight: 600;
 }
 
-:host-context(html.app-light) .feed-tab.is-active {
-  background: rgba(33, 65, 180, 0.12);
+:host .feed-tabs .feed-tab.is-active::after {
+  background: #2141b4;
+}
+
+:host-context(html.app-light) .feed-tabs .feed-tab.is-active {
   color: #2141b4;
 }
 
 /* What's new composer */
 
 .home-account-row.composer-row {
-  display: flex;
   box-sizing: border-box;
+  display: flex;
+  width: 100%;
   align-items: center;
   gap: 12px;
-  width: auto;
-  margin: 12px 16px 0;
+  margin: 0;
   padding: 16px;
-  border: 1px solid var(--page-border);
-  border-radius: 20px 20px 0 0;
-  background: transparent;
+  border: 0 !important;
+  border-bottom: 1px solid var(--page-border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .composer-row .profile-avatar {
   display: grid;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   place-items: center;
+  overflow: hidden;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -152,29 +197,31 @@
 }
 
 .profile-avatar img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .profile-avatar ion-icon {
-  width: 36px;
-  height: 36px;
+  display: block;
+  width: 40px;
+  height: 40px;
 }
 
 .composer-prompt,
 .composer-post-button {
-  text-decoration: none !important;
-  box-shadow: none !important;
   font: inherit;
   font-size: 14px;
+  text-decoration: none !important;
+  box-shadow: none !important;
 }
 
 .composer-prompt {
   display: flex;
-  flex: 1;
   min-width: 0;
   min-height: 44px;
+  flex: 1;
   align-items: center;
   border: 0;
   color: var(--page-muted) !important;
@@ -182,10 +229,11 @@
 
 .composer-post-button {
   display: inline-flex;
-  flex-shrink: 0;
   min-height: 44px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  margin-right: 0;
   padding: 0 16px;
   border: 1px solid var(--page-border);
   border-radius: 10px;
@@ -195,7 +243,7 @@
 }
 
 .composer-post-button:hover {
-  background: rgba(110, 146, 242, 0.1);
+  background: rgba(110, 146, 242, .1);
 }
 
 .feed-tab:focus-visible,
@@ -240,7 +288,7 @@
 .feed-empty p {
   margin: 0;
   color: var(--page-muted);
-  font-size: 0.8rem;
+  font-size: .8rem;
 }
 
 .feed-empty ion-button {
@@ -248,20 +296,27 @@
   margin-top: 10px;
 }
 
-/* Original bottom navigation */
+/* Existing bottom navigation */
+
+.home-footer {
+  --background: var(--page-bg);
+  --border-color: var(--page-border);
+}
 
 .home-footer ion-toolbar {
   --background: var(--page-bg);
   --border-color: var(--page-border);
+
   display: flex;
-  justify-content: space-around;
-  align-items: center;
   min-height: 62px;
+  align-items: center;
+  justify-content: space-around;
   padding: 6px 10px 8px;
 }
 
 .home-footer ion-button {
   --color: var(--page-muted);
+
   width: 42px;
   height: 42px;
   margin: 0;
@@ -284,35 +339,40 @@
   object-fit: contain;
 }
 
-/* Mobile and desktop adjustments */
+/* Mobile */
 
 @media (max-width: 380px) {
   .home-account-row.composer-row {
     gap: 8px;
-    margin-inline: 12px;
     padding: 12px;
+  }
+
+  :host .home-header .home-toolbar-row {
+    padding-inline: 12px;
   }
 }
 
 @media (max-width: 560px) {
   .feed-empty h3 {
-    font-size: 0.94rem;
+    font-size: .94rem;
   }
 
   .feed-empty p {
-    font-size: 0.74rem;
+    font-size: .74rem;
   }
 
   .feed-empty ion-button {
-    font-size: 0.8rem;
+    font-size: .8rem;
     text-transform: none;
   }
 }
 
+/* Desktop */
+
 @media (min-width: 768px) {
   .screen-shell {
-    border-left: 1px solid var(--page-border);
     border-right: 1px solid var(--page-border);
+    border-left: 1px solid var(--page-border);
   }
 
   .screen-shell > app-post-card {
@@ -320,11 +380,14 @@
   }
 
   .home-account-row.composer-row {
-    margin-inline: 24px;
-    padding: 18px;
+    padding-inline: 24px;
   }
 
   .feed-tabs {
+    padding-inline: 24px;
+  }
+
+  :host .home-header .home-toolbar-row {
     padding-inline: 24px;
   }
 }
@@ -332,49 +395,5 @@
 @media (prefers-reduced-motion: reduce) {
   .feed-tab {
     transition: none;
-  }
-}
-.home-account-row.composer-row {
-  margin-inline: 12px;
-  padding-inline: 3px;
-}
-
-.composer-row .profile-avatar {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-}
-
-.composer-row .profile-avatar ion-icon {
-  width: 40px;
-  height: 40px;
-}
-
-.composer-post-button {
-  margin-right: 12px;
-}
-
-@media (min-width: 768px) {
-  .home-account-row.composer-row {
-    margin-inline: 20px;
-  }
-}
-.home-account-row.composer-row {
-  margin: 0;
-  padding: 16px;
-  border: 0 !important;
-  border-bottom: 1px solid var(--page-border) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.composer-post-button {
-  margin-right: 0;
-}
-
-@media (min-width: 768px) {
-  .home-account-row.composer-row {
-    padding-inline: 24px;
   }
 }
